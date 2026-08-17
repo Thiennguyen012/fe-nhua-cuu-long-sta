@@ -1,0 +1,22 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import { ContactForm } from "@/app/components/ContactForm";
+import { Footer } from "@/app/components/Footer";
+import { Navbar } from "@/app/components/Navbar";
+import { BreadcrumbBar } from "@/app/components/Breadcrumb";
+
+export const metadata: Metadata = { title: "Liên hệ | Nhựa Cửu Long STA", description: "Liên hệ Nhựa Cửu Long STA để được tư vấn giải pháp và sản phẩm nhựa công nghiệp." };
+
+const contactItems = [
+  ["Địa chỉ", "KCN Tân Tạo, Q. Bình Tân, TP. Hồ Chí Minh", "Xem chỉ đường", "https://maps.google.com"],
+  ["Điện thoại", "0901 234 567", "Gọi ngay", "tel:0901234567"],
+  ["Email", "info@nhuacuulongsta.vn", "Gửi email", "mailto:info@nhuacuulongsta.vn"],
+  ["Giờ làm việc", "Thứ 2 – Thứ 7: 08:00 – 17:30", "Chủ nhật nghỉ", ""],
+];
+
+export default function ContactPage() {
+  return <><Navbar/><BreadcrumbBar items={[{ label: "Trang chủ", href: "/" }, { label: "Liên hệ" }]}/><main><section className="relative isolate flex min-h-[360px] items-center overflow-hidden bg-[#07243a]"><Image fill priority sizes="100vw" src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=90" alt="Văn phòng Nhựa Cửu Long STA" className="-z-20 object-cover"/><div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(4,31,50,.96),rgba(7,55,88,.76),rgba(3,24,39,.4))]"/><div className="mx-auto w-full max-w-[1240px] px-5 py-16 text-white lg:px-8"><p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[.24em] text-sky-300"><span className="h-px w-10 bg-sky-400"/>Kết nối cùng Cửu Long STA</p><h1 className="mt-5 text-4xl font-extrabold tracking-[-.035em] sm:text-5xl lg:text-[56px]">Chúng tôi luôn sẵn sàng lắng nghe</h1><p className="mt-5 max-w-2xl text-sm leading-7 text-white/70 sm:text-base">Hãy chia sẻ nhu cầu của bạn để đội ngũ Cửu Long STA tư vấn giải pháp phù hợp và hiệu quả nhất.</p></div></section>
+    <section className="bg-surface py-20 sm:py-24"><div className="mx-auto grid max-w-[1240px] gap-10 px-5 lg:grid-cols-[.85fr_1.15fr] lg:gap-14 lg:px-8"><div><p className="text-xs font-bold uppercase tracking-[.22em] text-brand">Thông tin liên hệ</p><h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-[-.025em] sm:text-4xl">Hãy bắt đầu một cuộc trò chuyện</h2><p className="mt-5 text-sm leading-7 text-slate-600">Bạn có thể liên hệ qua bất kỳ kênh nào dưới đây. Chúng tôi phản hồi mọi yêu cầu trong giờ làm việc.</p><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-1">{contactItems.map(([title,value,action,href]) => <article key={title} className="rounded-2xl border border-slate-200 bg-white p-5"><p className="text-xs font-bold uppercase tracking-[.14em] text-brand">{title}</p><p className="mt-2 text-sm font-semibold leading-6 text-ink">{value}</p>{href ? <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noreferrer" : undefined} className="mt-2 inline-block text-xs font-bold text-brand">{action} →</a> : <span className="mt-2 block text-xs text-slate-400">{action}</span>}</article>)}</div></div><ContactForm/></div></section>
+    <section className="bg-white py-20"><div className="mx-auto grid max-w-[1240px] items-stretch gap-6 px-5 md:grid-cols-[1.2fr_.8fr] lg:px-8"><div className="relative min-h-[330px] overflow-hidden rounded-3xl bg-[#dcebf4]"><div className="absolute inset-0 opacity-35" style={{backgroundImage:"linear-gradient(#8eb9d4 1px,transparent 1px),linear-gradient(90deg,#8eb9d4 1px,transparent 1px)",backgroundSize:"32px 32px"}}/><div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center"><span className="mx-auto grid size-14 place-items-center rounded-full bg-brand text-2xl text-white shadow-xl">●</span><strong className="mt-4 block text-lg text-ink">Nhựa Cửu Long STA</strong><p className="mt-1 text-xs text-slate-500">KCN Tân Tạo, TP. Hồ Chí Minh</p></div></div><div className="rounded-3xl bg-[#071d2e] p-8 text-white sm:p-10"><p className="text-xs font-bold uppercase tracking-[.2em] text-sky-300">Hỗ trợ nhanh</p><h2 className="mt-4 text-2xl font-extrabold">Cần tư vấn ngay?</h2><p className="mt-4 text-sm leading-7 text-white/60">Gọi trực tiếp hotline để được kết nối với chuyên viên sản phẩm.</p><a href="tel:0901234567" className="mt-7 inline-flex rounded-full bg-brand px-6 py-3.5 text-sm font-bold">0901 234 567</a></div></div></section>
+  </main><Footer/></>;
+}
