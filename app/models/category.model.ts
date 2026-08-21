@@ -2,6 +2,8 @@ export interface Category {
   id: number;
   category_name: string;
   description: string | null;
+  thumbnail_path?: string | null;
+  thumbnail_url?: string | null;
   created_at: string;
   updated_at: string;
 }

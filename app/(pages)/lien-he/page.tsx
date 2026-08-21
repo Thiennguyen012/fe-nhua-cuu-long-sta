@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import { ContactForm } from "@/app/components/ContactForm";
-import { Footer } from "@/app/components/Footer";
-import { Navbar } from "@/app/components/Navbar";
-import { BreadcrumbBar } from "@/app/components/Breadcrumb";
-import { ContactMap } from "@/app/components/ContactMap";
-import { ContactAddresses } from "@/app/components/ContactAddresses";
-import { ContactHotline } from "@/app/components/ContactHotline";
+import { ContactPageContent } from "@/app/components/ContactPageContent";
+import { getPageContent } from "@/app/services/page-content.service";
 
-export const metadata: Metadata = { title: "Liên hệ | Nhựa Cửu Long STA", description: "Liên hệ Nhựa Cửu Long STA để được tư vấn giải pháp và sản phẩm nhựa công nghiệp." };
+export const metadata: Metadata = {
+  title: "Liên hệ | Nhựa Cửu Long STA",
+  description: "Liên hệ Nhựa Cửu Long STA để được tư vấn giải pháp và sản phẩm nhựa công nghiệp.",
+};
 
-
-export default function ContactPage() {
-  return <><Navbar/><BreadcrumbBar items={[{ label: "Trang chủ", href: "/" }, { label: "Liên hệ" }]}/><main><section className="relative isolate flex min-h-[360px] items-center overflow-hidden bg-[#07243a]"><Image fill priority sizes="100vw" src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=90" alt="Văn phòng Nhựa Cửu Long STA" className="-z-20 object-cover"/><div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(4,31,50,.96),rgba(7,55,88,.76),rgba(3,24,39,.4))]"/><div className="mx-auto w-full max-w-[1240px] px-5 py-16 text-white lg:px-8"><p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[.24em] text-sky-300"><span className="h-px w-10 bg-sky-400"/>Kết nối cùng Cửu Long STA</p><h1 className="mt-5 text-4xl font-extrabold tracking-[-.035em] sm:text-5xl lg:text-[56px]">Chúng tôi luôn sẵn sàng lắng nghe</h1><p className="mt-5 max-w-2xl text-sm leading-7 text-white/70 sm:text-base">Hãy chia sẻ nhu cầu của bạn để đội ngũ Cửu Long STA tư vấn giải pháp phù hợp và hiệu quả nhất.</p></div></section>
-    <section className="bg-surface py-20 sm:py-24"><div className="mx-auto grid max-w-[1240px] gap-10 px-5 lg:grid-cols-[.85fr_1.15fr] lg:gap-14 lg:px-8"><div><p className="text-xs font-bold uppercase tracking-[.22em] text-brand">Thông tin liên hệ</p><h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-[-.025em] sm:text-4xl">Hãy bắt đầu một cuộc trò chuyện</h2><p className="mt-5 text-sm leading-7 text-slate-600">Bạn có thể liên hệ qua bất kỳ kênh nào dưới đây. Chúng tôi phản hồi mọi yêu cầu trong giờ làm việc.</p><ContactAddresses/></div><ContactForm/></div></section>
-    <section className="bg-white py-20"><div className="mx-auto grid max-w-[1240px] items-stretch gap-6 px-5 md:grid-cols-[1.2fr_.8fr] lg:px-8"><ContactMap/><ContactHotline/></div></section>
-  </main><Footer/></>;
+export default async function ContactPage() {
+  const pageContent = await getPageContent("lien-he");
+  return <ContactPageContent pageContent={pageContent} />;
 }
