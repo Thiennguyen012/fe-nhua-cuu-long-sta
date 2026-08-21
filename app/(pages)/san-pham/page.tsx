@@ -34,5 +34,5 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     getProducts({ search, categoryIds, sort, isFeatured, page, perPage: 12 }).catch((error: unknown) => { console.error("Failed to load products:", error); return { status_code: 500, message: "", data: [], meta: { current_page: 1, last_page: 1, per_page: 12, total: 0 } }; }),
   ]);
 
-  return <><Navbar/><BreadcrumbBar items={[{ label: "Trang chủ", href: "/" }, { label: "Sản phẩm" }]}/><ProductCatalog categories={categories} products={productResponse.data} meta={productResponse.meta} search={search} selectedCategoryIds={categoryIds} sort={sort} isFeatured={isFeatured}/><Footer/></>;
+  return <><Navbar/><BreadcrumbBar items={[{ label: "Trang chủ", href: "/" }, { label: "Sản phẩm" }]}/><ProductCatalog key={search} categories={categories} products={productResponse.data} meta={productResponse.meta} search={search} selectedCategoryIds={categoryIds} sort={sort} isFeatured={isFeatured}/><Footer/></>;
 }
