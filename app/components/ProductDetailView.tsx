@@ -13,7 +13,7 @@ interface ProductDetailViewProps {
 
 function getVariantImageUrl(variant: ProductVariant | null): string | null {
   if (!variant) return null;
-  const v = variant as Record<string, unknown>;
+  const v = variant as unknown as Record<string, unknown>;
   if (typeof v.image_url === "string" && v.image_url) return v.image_url;
   if (v.first_image) return getProductImageUrl(v.first_image as any);
   if (v.image) return getProductImageUrl(v.image as any);
