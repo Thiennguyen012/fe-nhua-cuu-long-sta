@@ -19,19 +19,17 @@ const isPageConfig = (value: unknown): value is PageConfig => {
   const config = value as Partial<PageConfig>;
   return (
     typeof config.id === "number" &&
-    typeof config.company_name === "string" &&
-    (typeof config.slogan === "string" || config.slogan === null) &&
-    (typeof config.description === "string" || config.description === null) &&
-    Array.isArray(config.addresses) &&
-    config.addresses.every((address) => typeof address === "string") &&
-    typeof config.hotline === "string" &&
+    (config.company_name === undefined || typeof config.company_name === "string" || config.company_name === null) &&
+    (config.slogan === undefined || typeof config.slogan === "string" || config.slogan === null) &&
+    (config.description === undefined || typeof config.description === "string" || config.description === null) &&
+    (config.addresses === undefined || Array.isArray(config.addresses) || config.addresses === null) &&
+    (config.hotline === undefined || typeof config.hotline === "string" || config.hotline === null) &&
     (config.email === undefined || typeof config.email === "string" || config.email === null) &&
-    typeof config.working_hour === "string" &&
+    (config.working_hour === undefined || typeof config.working_hour === "string" || config.working_hour === null) &&
     (config.map_url === undefined || typeof config.map_url === "string" || config.map_url === null) &&
-    !!config.socials &&
-    typeof config.socials === "object" &&
-    (typeof config.favicon_path === "string" || config.favicon_path === null) &&
-    (typeof config.logo_path === "string" || config.logo_path === null)
+    (config.socials === undefined || config.socials === null || typeof config.socials === "object") &&
+    (config.favicon_path === undefined || typeof config.favicon_path === "string" || config.favicon_path === null) &&
+    (config.logo_path === undefined || typeof config.logo_path === "string" || config.logo_path === null)
   );
 };
 
