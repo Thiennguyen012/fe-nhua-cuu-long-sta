@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { ContactPageContent } from "@/app/components/ContactPageContent";
+import { JsonLd } from "@/app/components/JsonLd";
+import { createBreadcrumbJsonLd } from "@/app/lib/seo";
 import { getPageContent } from "@/app/services/page-content.service";
 
 export const metadata: Metadata = {
@@ -15,5 +17,15 @@ export const metadata: Metadata = {
 
 export default async function ContactPage() {
   const pageContent = await getPageContent("lien-he");
-  return <ContactPageContent pageContent={pageContent} />;
+  return (
+    <>
+      <JsonLd
+        data={createBreadcrumbJsonLd([
+          { name: "Trang chủ", path: "/" },
+          { name: "Liên hệ", path: "/lien-he" },
+        ])}
+      />
+      <ContactPageContent pageContent={pageContent} />
+    </>
+  );
 }

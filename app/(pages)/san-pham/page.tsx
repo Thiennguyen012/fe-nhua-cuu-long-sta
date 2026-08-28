@@ -3,6 +3,8 @@ import { Footer } from "@/app/components/Footer";
 import { Navbar } from "@/app/components/Navbar";
 import { ProductCatalog } from "@/app/components/ProductCatalog";
 import { BreadcrumbBar } from "@/app/components/Breadcrumb";
+import { JsonLd } from "@/app/components/JsonLd";
+import { createBreadcrumbJsonLd } from "@/app/lib/seo";
 import { getCategories } from "@/app/services/category.service";
 import { getProducts } from "@/app/services/product.service";
 import type { ProductSort } from "@/app/models/product.model";
@@ -91,7 +93,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const sort: ProductSort = allowedSorts.includes(sortParam as ProductSort) ? (sortParam as ProductSort) : "latest";
 
   const featuredParamRaw = typeof query["noi-bat"] === "string" ? query["noi-bat"] : typeof query.is_featured === "string" ? query.is_featured : "";
-  const isFeatured = featuredParamRaw === "true" ? true : featuredParamRaw === "false" ? false : undefined;
+  const isFeatured = featuredParamRaw === "true" ? true : undefined;
 
   const parsedPage = Number(typeof query.trang === "string" ? query.trang : typeof query.page === "string" ? query.page : 1);
   const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
@@ -105,6 +107,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <>
+      <JsonLd
+        data={createBreadcrumbJsonLd([
+          { name: "Trang chủ", path: "/" },
+          { name: "Sản phẩm", path: "/san-pham" },
+        ])}
+      />
       <Navbar />
       <BreadcrumbBar items={[{ label: "Trang chủ", href: "/" }, { label: "Sản phẩm" }]} />
       <ProductCatalog

@@ -5,6 +5,7 @@ import { PageConfigProvider } from "./components/PageConfigProvider";
 import { getPageConfig, getPageConfigAssetUrl } from "./services/page-config.service";
 import { getCategories } from "./services/category.service";
 import { ScrollToTopButton } from "./components/ScrollToTopButton";
+import { JsonLd } from "./components/JsonLd";
 import { getSiteUrl } from "./lib/seo";
 export const dynamic = "force-dynamic";
 const font = Be_Vietnam_Pro({ variable: "--font-be-vietnam", subsets: ["latin", "vietnamese"], weight: ["400", "500", "600", "700", "800"] });
@@ -54,5 +55,38 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     }),
   ]);
 
-  return <html lang="vi" className={`${font.variable} ${font.className}`}><body><PageConfigProvider config={pageConfig} categories={categories}>{children}<ScrollToTopButton/></PageConfigProvider></body></html>;
+  const siteUrl = getSiteUrl();
+  const companyName = pageConfig?.company_name?.trim() || "Nhựa Cửu Long STA";
+  const sameAs = Object.values(pageConfig?.socials ?? {}).filter(
+    (url): url is string => typeof url === "string" && /^https?:\/\//i.test(url)
+  );
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${siteUrl}/#organization`,
+    name: companyName,
+    url: siteUrl,
+    ...(pageConfig?.logo_path
+      ? { logo: getPageConfigAssetUrl(pageConfig.logo_path) }
+      : {}),
+    ...(pageConfig?.description?.trim()
+      ? { description: pageConfig.description.trim() }
+      : {}),
+    ...(pageConfig?.hotline?.trim()
+      ? { telephone: pageConfig.hotline.trim() }
+      : {}),
+    ...(pageConfig?.email?.trim() ? { email: pageConfig.email.trim() } : {}),
+    ...(pageConfig?.addresses?.length
+      ? {
+          address: pageConfig.addresses.filter(Boolean).map((address) => ({
+            "@type": "PostalAddress",
+            streetAddress: address,
+            addressCountry: "VN",
+          })),
+        }
+      : {}),
+    ...(sameAs.length ? { sameAs } : {}),
+  };
+
+  return <html lang="vi" className={`${font.variable} ${font.className}`}><body><JsonLd data={organizationJsonLd}/><PageConfigProvider config={pageConfig} categories={categories}>{children}<ScrollToTopButton/></PageConfigProvider></body></html>;
 }

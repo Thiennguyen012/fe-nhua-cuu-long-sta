@@ -149,9 +149,9 @@ export function AboutPageContent({ pageContent }: AboutPageContentProps) {
 
             <div>
               <p className="text-xs font-bold uppercase tracking-[.24em] text-brand">{introSubtitle}</p>
-              <h2 className="mt-4 text-3xl font-extrabold leading-tight tracking-[-.025em] sm:text-4xl">
+              <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-[-.025em] sm:text-4xl">
                 {introTitle}
-              </h2>
+              </h1>
               {introSection?.content ? (
                 <div
                   className="mt-6 space-y-4 text-sm leading-7 text-slate-600 sm:text-base [&>p]:mb-3 [&_strong]:font-bold [&_strong]:text-slate-800"

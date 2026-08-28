@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { AboutPageContent } from "@/app/components/AboutPageContent";
+import { JsonLd } from "@/app/components/JsonLd";
+import { createBreadcrumbJsonLd } from "@/app/lib/seo";
 import { getPageContent } from "@/app/services/page-content.service";
 
 export const metadata: Metadata = {
@@ -15,5 +17,15 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const pageContent = await getPageContent("gioi-thieu");
-  return <AboutPageContent pageContent={pageContent} />;
+  return (
+    <>
+      <JsonLd
+        data={createBreadcrumbJsonLd([
+          { name: "Trang chủ", path: "/" },
+          { name: "Giới thiệu", path: "/gioi-thieu" },
+        ])}
+      />
+      <AboutPageContent pageContent={pageContent} />
+    </>
+  );
 }

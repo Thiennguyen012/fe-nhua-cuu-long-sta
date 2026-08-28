@@ -5,9 +5,11 @@ import { Footer } from "@/app/components/Footer";
 import { Navbar } from "@/app/components/Navbar";
 import { BreadcrumbBar } from "@/app/components/Breadcrumb";
 import { ProductDetailView } from "@/app/components/ProductDetailView";
+import { JsonLd } from "@/app/components/JsonLd";
 import { createProductSlug, getProductIdFromSlug, getProductImageUrl } from "@/app/lib/product";
 import { getProduct } from "@/app/services/product.service";
 import { stripHtml } from "@/app/services/page-content.service";
+import { createBreadcrumbJsonLd, getSiteUrl } from "@/app/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -58,9 +60,60 @@ export default async function ProductDetailPage({ params }: PageProps<"/san-pham
   if (!product) notFound();
   const canonicalSlug = createProductSlug(product.product_name, product.id);
   if (slug !== canonicalSlug) permanentRedirect(`/san-pham/${canonicalSlug}`);
+  const canonicalPath = `/san-pham/${canonicalSlug}`;
+  const productUrl = `${getSiteUrl()}${canonicalPath}`;
+  const description = product.description
+    ? stripHtml(product.description)
+    : `Thông tin chi tiết sản phẩm ${product.product_name}.`;
+  const images = Array.from(
+    new Set(
+      [product.first_image, ...(product.images ?? [])]
+        .map((image) => getProductImageUrl(image))
+        .filter((url): url is string => Boolean(url))
+    )
+  );
+  const offers = product.is_contact_price
+    ? []
+    : (product.variants ?? [])
+        .filter((variant) => {
+          const price = Number(variant.price);
+          return variant.is_active && !variant.is_contact_price && Number.isFinite(price) && price > 0;
+        })
+        .map((variant) => ({
+          "@type": "Offer",
+          price: Number(variant.price).toFixed(0),
+          priceCurrency: "VND",
+          availability: variant.stock > 0
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+          url: productUrl,
+          ...(variant.sku ? { sku: variant.sku } : {}),
+          seller: { "@id": `${getSiteUrl()}/#organization` },
+        }));
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": `${productUrl}#product`,
+    name: product.product_name,
+    description,
+    url: productUrl,
+    ...(images.length ? { image: images } : {}),
+    ...(product.sku ? { sku: product.sku } : {}),
+    ...(product.category_names ? { category: product.category_names } : {}),
+    brand: { "@id": `${getSiteUrl()}/#organization` },
+    ...(offers.length ? { offers } : {}),
+  };
 
   return (
     <>
+      <JsonLd data={productJsonLd} />
+      <JsonLd
+        data={createBreadcrumbJsonLd([
+          { name: "Trang chủ", path: "/" },
+          { name: "Sản phẩm", path: "/san-pham" },
+          { name: product.product_name, path: canonicalPath },
+        ])}
+      />
       <Navbar />
       <BreadcrumbBar
         items={[

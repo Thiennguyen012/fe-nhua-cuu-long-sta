@@ -283,7 +283,7 @@ export function ProductCatalog({
         <section className={`min-w-0 transition-opacity duration-200 ${isPending ? "opacity-50" : ""}`}>
           <div className="flex flex-col gap-4 border-b border-slate-100 pb-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setFilterOpen(true)}
@@ -297,19 +297,22 @@ export function ProductCatalog({
                     </span>
                   )}
                 </button>
-                <p className="text-xs text-slate-500">
-                  Tìm thấy <strong className="text-ink">{meta.total}</strong> sản phẩm
-                </p>
+                <div>
+                  <h1 className="text-lg font-bold text-ink">Danh sách sản phẩm</h1>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    Tìm thấy <strong className="text-ink">{meta.total}</strong> sản phẩm
+                  </p>
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
                 <label className="relative">
                   <span className="sr-only">Lọc sản phẩm nổi bật</span>
                   <select
-                    value={typeof isFeatured === "boolean" ? String(isFeatured) : ""}
+                    value={isFeatured === true ? "true" : ""}
                     onChange={(event) =>
                       navigate({
-                        isFeatured: event.target.value === "" ? null : event.target.value === "true",
+                        isFeatured: event.target.value === "true" ? true : null,
                         page: 1,
                       })
                     }
@@ -317,7 +320,6 @@ export function ProductCatalog({
                   >
                     <option value="">Tất cả sản phẩm</option>
                     <option value="true">Sản phẩm nổi bật</option>
-                    <option value="false">Không nổi bật</option>
                   </select>
                   <svg
                     viewBox="0 0 20 20"
@@ -379,7 +381,7 @@ export function ProductCatalog({
               </div>
             </div>
 
-            {(search || activeCategories.length > 0 || typeof isFeatured === "boolean") && (
+            {(search || activeCategories.length > 0 || isFeatured === true) && (
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="text-xs font-semibold text-slate-400">Đang lọc:</span>
                 {search && (
@@ -407,13 +409,13 @@ export function ProductCatalog({
                     </span>
                   </button>
                 ))}
-                {typeof isFeatured === "boolean" && (
+                {isFeatured === true && (
                   <button
                     type="button"
                     onClick={() => navigate({ isFeatured: null, page: 1 })}
                     className="group inline-flex items-center gap-2 rounded-full border border-sky-200/80 bg-sky-50 px-3.5 py-1.5 text-xs font-semibold text-brand shadow-sm transition duration-200 hover:border-sky-300 hover:bg-sky-100 hover:shadow"
                   >
-                    <span>{isFeatured ? "Nổi bật" : "Không nổi bật"}</span>
+                    <span>Nổi bật</span>
                     <span className="grid size-4 place-items-center rounded-full bg-sky-200/70 text-[10px] font-bold text-brand transition duration-200 group-hover:bg-brand group-hover:text-white">
                       ✕
                     </span>
@@ -449,12 +451,16 @@ export function ProductCatalog({
                       ) : (
                         <ProductBlankImage />
                       )}
+                      {product.is_featured && (
+                        <span
+                          aria-label="Sản phẩm nổi bật"
+                          title="Sản phẩm nổi bật"
+                          className="absolute right-4 top-0 rounded-b-xl bg-brand px-3 pb-2 pt-2.5 text-[10px] font-bold uppercase tracking-[.08em] text-white shadow-[0_6px_16px_rgba(8,117,189,.25)]"
+                        >
+                          Nổi bật
+                        </span>
+                      )}
                       <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-                        {product.is_featured && (
-                          <span className="rounded-full bg-[#173f5b] px-3 py-1 text-[10px] font-bold text-white shadow-sm">
-                            Nổi bật
-                          </span>
-                        )}
                         {product.variants.length > 0 && (
                           <span className="rounded-full bg-white/90 px-3 py-1 text-[10px] font-semibold text-slate-600 shadow-sm backdrop-blur">
                             {product.variants.length} lựa chọn
