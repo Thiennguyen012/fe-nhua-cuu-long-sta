@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Footer } from "@/app/components/Footer";
 import { Navbar } from "@/app/components/Navbar";
 import { BreadcrumbBar } from "@/app/components/Breadcrumb";
 import { ProductDetailView } from "@/app/components/ProductDetailView";
-import { getProductIdFromSlug } from "@/app/lib/product";
+import { createProductSlug, getProductIdFromSlug, getProductImageUrl } from "@/app/lib/product";
 import { getProduct } from "@/app/services/product.service";
 import { stripHtml } from "@/app/services/page-content.service";
 
@@ -20,10 +20,35 @@ async function loadProduct(slug: string) {
 export async function generateMetadata({ params }: PageProps<"/san-pham/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const product = await loadProduct(slug);
-  if (!product) return { title: "Không tìm thấy sản phẩm | Nhựa Cửu Long STA" };
+  if (!product) {
+    return {
+      title: "Không tìm thấy sản phẩm | Nhựa Cửu Long STA",
+      robots: { index: false, follow: false },
+    };
+  }
+  const canonicalPath = `/san-pham/${createProductSlug(product.product_name, product.id)}`;
+  const description = product.description
+    ? stripHtml(product.description)
+    : `Thông tin chi tiết sản phẩm ${product.product_name}.`;
+  const imageUrl = getProductImageUrl(product.first_image);
+
   return {
     title: `${product.product_name} | Nhựa Cửu Long STA`,
-    description: product.description ? stripHtml(product.description) : `Thông tin chi tiết sản phẩm ${product.product_name}.`,
+    description,
+    alternates: { canonical: canonicalPath },
+    openGraph: {
+      type: "website",
+      title: `${product.product_name} | Nhựa Cửu Long STA`,
+      description,
+      url: canonicalPath,
+      ...(imageUrl ? { images: [{ url: imageUrl, alt: product.product_name }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.product_name} | Nhựa Cửu Long STA`,
+      description,
+      ...(imageUrl ? { images: [imageUrl] } : {}),
+    },
   };
 }
 
@@ -31,6 +56,8 @@ export default async function ProductDetailPage({ params }: PageProps<"/san-pham
   const { slug } = await params;
   const product = await loadProduct(slug);
   if (!product) notFound();
+  const canonicalSlug = createProductSlug(product.product_name, product.id);
+  if (slug !== canonicalSlug) permanentRedirect(`/san-pham/${canonicalSlug}`);
 
   return (
     <>

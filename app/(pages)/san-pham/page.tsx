@@ -9,12 +9,26 @@ import type { ProductSort } from "@/app/models/product.model";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Sản phẩm | Nhựa Cửu Long STA",
-  description: "Danh mục hũ nhựa, chai nhựa, hộp nhựa và bao bì nhựa chất lượng cao.",
-};
-
 type ProductsPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
+
+export async function generateMetadata({ searchParams }: ProductsPageProps): Promise<Metadata> {
+  const query = await searchParams;
+  const hasQuery = Object.values(query).some((value) =>
+    Array.isArray(value) ? value.some(Boolean) : Boolean(value)
+  );
+
+  return {
+    title: "Sản phẩm | Nhựa Cửu Long STA",
+    description: "Danh mục hũ nhựa, chai nhựa, hộp nhựa và bao bì nhựa chất lượng cao.",
+    alternates: { canonical: "/san-pham" },
+    robots: hasQuery ? { index: false, follow: true } : { index: true, follow: true },
+    openGraph: {
+      title: "Sản phẩm | Nhựa Cửu Long STA",
+      description: "Danh mục hũ nhựa, chai nhựa, hộp nhựa và bao bì nhựa chất lượng cao.",
+      url: "/san-pham",
+    },
+  };
+}
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const query = await searchParams;
