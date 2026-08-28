@@ -5,6 +5,18 @@ const nextConfig: NextConfig = {
     return [
       { source: "/about", destination: "/gioi-thieu", permanent: true },
       { source: "/products", destination: "/san-pham", permanent: true },
+      { source: "/cua-hang", destination: "/san-pham", permanent: true },
+      { source: "/brand/:path*", destination: "/san-pham", permanent: true },
+      {
+        source: "/danh-muc-san-pham/:path*",
+        destination: "/san-pham",
+        permanent: true,
+      },
+      {
+        source: "/product-category/:path*",
+        destination: "/san-pham",
+        permanent: true,
+      },
     ];
   },
   images: {
