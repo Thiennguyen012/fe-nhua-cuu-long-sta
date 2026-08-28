@@ -106,7 +106,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/san-pham
 
   return (
     <>
-      <JsonLd data={productJsonLd} />
+      {offers.length > 0 && <JsonLd data={productJsonLd} />}
       <JsonLd
         data={createBreadcrumbJsonLd([
           { name: "Trang chủ", path: "/" },
