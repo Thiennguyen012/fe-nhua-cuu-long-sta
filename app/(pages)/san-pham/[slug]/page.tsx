@@ -132,7 +132,7 @@ export default async function ProductDetailPage({ params }: PageProps<"/san-pham
               <h2 className="mt-3 text-2xl font-bold text-ink">Mô tả sản phẩm</h2>
               {product.description ? (
                 <div
-                  className="mt-6 text-base leading-7 text-slate-600 [&>p]:mb-3 [&_strong]:font-bold [&_strong]:text-slate-800"
+                  className="mt-6 text-base leading-7 text-slate-600 [&_h3]:mb-3 [&_h3]:mt-6 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:text-ink [&_li]:mb-2 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&>p]:mb-3 [&_strong]:font-bold [&_strong]:text-slate-800 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6"
                   dangerouslySetInnerHTML={{ __html: product.description }}
                 />
               ) : (
