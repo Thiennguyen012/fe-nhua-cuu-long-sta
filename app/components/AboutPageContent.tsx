@@ -7,6 +7,7 @@ import { Navbar } from "@/app/components/Navbar";
 import { BreadcrumbBar } from "@/app/components/Breadcrumb";
 import type { PageContent, PageSection } from "../models/page-content.model";
 import { getFileUrl, stripHtml } from "../services/page-content.service";
+import { shouldBypassImageOptimization } from "../lib/image";
 
 interface AboutPageContentProps {
   pageContent?: PageContent | null;
@@ -129,16 +130,16 @@ export function AboutPageContent({ pageContent }: AboutPageContentProps) {
       <main>
         {/* Section 1: Lời giới thiệu */}
         <section className="bg-[#f5f9fc]">
-          <div className="mx-auto grid max-w-[1240px] items-start gap-10 px-5 pb-12 pt-8 sm:pb-20 sm:pt-12 lg:grid-cols-2 lg:gap-14 lg:px-8">
-            <div className="relative">
+          <div className="mx-auto flow-root max-w-[1240px] px-5 pb-12 pt-8 sm:pb-20 sm:pt-12 lg:px-8">
+            <div className="relative mb-12 lg:float-left lg:mb-8 lg:mr-14 lg:w-[calc((100%-3.5rem)/2)]">
               <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-2 shadow-sm">
                 <Image
                   src={introImage}
                   alt={introTitle}
                   width={1000}
                   height={750}
+                  unoptimized={shouldBypassImageOptimization(introImage)}
                   className="h-auto w-full rounded-2xl object-contain"
-                  unoptimized
                 />
               </div>
               <div className="absolute -bottom-5 right-4 z-10 rounded-2xl bg-brand px-6 py-4 text-white shadow-2xl sm:right-[-16px]">

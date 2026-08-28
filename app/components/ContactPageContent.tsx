@@ -10,6 +10,7 @@ import { ContactAddresses } from "./ContactAddresses";
 import { ContactHotline } from "./ContactHotline";
 import type { PageContent, PageSection } from "../models/page-content.model";
 import { getFileUrl, stripHtml } from "../services/page-content.service";
+import { shouldBypassImageOptimization } from "../lib/image";
 
 interface ContactPageContentProps {
   pageContent?: PageContent | null;
@@ -62,12 +63,12 @@ export function ContactPageContent({ pageContent }: ContactPageContentProps) {
         <section className="relative isolate flex min-h-[360px] items-center overflow-hidden bg-[#07243a]">
           <Image
             fill
-            priority
+            preload
             sizes="100vw"
             src={heroBgImage}
             alt={heroTitle}
+            unoptimized={shouldBypassImageOptimization(heroBgImage)}
             className="-z-20 object-cover"
-            unoptimized
           />
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(4,31,50,.96),rgba(7,55,88,.76),rgba(3,24,39,.4))]" />
           <div className="mx-auto w-full max-w-[1240px] px-5 py-16 text-white lg:px-8">

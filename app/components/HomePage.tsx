@@ -9,6 +9,7 @@ import { HomeCategories } from "./HomeCategories";
 import { usePageConfig } from "./PageConfigProvider";
 import type { PageContent, PageSection } from "../models/page-content.model";
 import { getFileUrl, stripHtml } from "../services/page-content.service";
+import { shouldBypassImageOptimization } from "../lib/image";
 
 interface HomePageProps {
   pageContent?: PageContent | null;
@@ -118,8 +119,8 @@ export function HomePage({ pageContent }: HomePageProps) {
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 src={aboutImage}
                 alt={aboutTitle}
+                unoptimized={shouldBypassImageOptimization(aboutImage)}
                 className="object-cover"
-                unoptimized
               />
             </div>
             <div>

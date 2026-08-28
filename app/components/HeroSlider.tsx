@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { PageSectionItem } from "../models/page-content.model";
 import { getFileUrl, stripHtml } from "../services/page-content.service";
+import { shouldBypassImageOptimization } from "../lib/image";
 
 const defaultSlides = [
   {
@@ -56,15 +58,17 @@ export function HeroSlider({ items }: HeroSliderProps) {
 
   return (
     <section className="relative min-h-[560px] overflow-hidden bg-slate-900 sm:min-h-[620px] lg:min-h-[650px]">
-      {slides.map((item, i) => (
-        <div
-          key={item.title + i}
-          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
-            i === active ? "opacity-100" : "opacity-0"
-          }`}
-          style={{ backgroundImage: `url(${item.image})` }}
-        />
-      ))}
+      <Image
+        key={slide.image}
+        src={slide.image}
+        alt=""
+        fill
+        sizes="100vw"
+        preload={active === 0}
+        quality={75}
+        unoptimized={shouldBypassImageOptimization(slide.image)}
+        className="object-cover object-center"
+      />
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,29,49,.94)_0%,rgba(5,47,79,.78)_43%,rgba(2,21,36,.18)_78%)]" />
       <div className="relative mx-auto flex min-h-[560px] max-w-[1240px] items-center px-5 py-20 sm:min-h-[620px] lg:min-h-[650px] lg:px-8">
         <div key={active} className="hero-content max-w-2xl pt-4 text-white">

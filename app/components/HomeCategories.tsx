@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useCategories } from "./PageConfigProvider";
 import { stripHtml } from "../services/page-content.service";
 import { getPageConfigAssetUrl } from "../services/page-config.service";
+import { shouldBypassImageOptimization } from "../lib/image";
 
 function CategoryIcon() {
   return (
@@ -49,13 +51,15 @@ export function HomeCategories() {
               href={`/san-pham?danh-muc=${category.slug || category.id}`}
               className="group overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_20px_45px_rgba(13,58,92,.12)]"
             >
-              <div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#eaf6fd_0%,#d7edf9_52%,#c8e4f4_100%)] text-brand">
+              <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-white text-brand">
                 {thumbUrl ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
-                  <img
+                  <Image
                     src={thumbUrl}
                     alt={category.category_name}
-                    className="size-full object-cover transition duration-500 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    unoptimized={shouldBypassImageOptimization(thumbUrl)}
+                    className="object-contain p-2 transition duration-500 group-hover:scale-[1.02]"
                   />
                 ) : (
                   <>
