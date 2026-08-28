@@ -44,13 +44,13 @@ export function ProductGallery({ images, productName, variantImage }: ProductGal
   return (
     <div className="space-y-4">
       {/* Main Image Box */}
-      <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-sm">
+      <div className="group relative aspect-[6/5] w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
         {activeUrl ? (
           <img
             key={activeUrl}
             src={activeUrl}
             alt={productName}
-            className="size-full object-cover transition-opacity duration-300"
+            className="size-full object-contain transition-opacity duration-300"
           />
         ) : (
           <ProductBlankImage />
@@ -104,7 +104,7 @@ export function ProductGallery({ images, productName, variantImage }: ProductGal
                     : "border-slate-200 bg-slate-100 opacity-75 hover:border-slate-300 hover:opacity-100"
                 }`}
               >
-                <img src={url} alt={`${productName} thumbnail ${idx + 1}`} className="size-full object-cover" />
+                <img src={url} alt={`${productName} thumbnail ${idx + 1}`} className="size-full object-contain" />
               </button>
             );
           })}

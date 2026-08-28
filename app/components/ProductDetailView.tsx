@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ProductGallery } from "./ProductGallery";
 import { ProductVariantSelector } from "./ProductVariantSelector";
+import { usePageConfig } from "./PageConfigProvider";
 import type { ProductListItem, ProductVariant } from "../models/product.model";
 import { getProductImageUrl } from "../lib/product";
 
@@ -22,7 +23,10 @@ function getVariantImageUrl(variant: ProductVariant | null): string | null {
 }
 
 export function ProductDetailView({ product }: ProductDetailViewProps) {
+  const config = usePageConfig();
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const hotline = config?.hotline?.trim() || "0901 234 567";
+  const hotlineHref = hotline.replace(/[^\d+]/g, "");
 
   const images = product.images.length ? product.images : product.first_image ? [product.first_image] : [];
   const variantImage = getVariantImageUrl(selectedVariant);
@@ -51,7 +55,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
           )}
         </div>
 
-        <h1 className="mt-5 text-3xl font-bold leading-tight tracking-[-.02em] text-ink sm:text-4xl">
+        <h1 className="mt-5 text-3xl font-bold leading-tight tracking-[-.02em] text-ink sm:text-[34px]">
           {product.product_name}
         </h1>
 
@@ -65,6 +69,7 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
         <ProductVariantSelector
           groups={product.variant_groups ?? []}
           variants={product.variants ?? []}
+          isContactPrice={product.is_contact_price}
           onVariantChange={setSelectedVariant}
         />
 
@@ -76,10 +81,10 @@ export function ProductDetailView({ product }: ProductDetailViewProps) {
             Nhận tư vấn sản phẩm
           </Link>
           <a
-            href="tel:0901234567"
+            href={`tel:${hotlineHref}`}
             className="rounded-full border border-sky-200 bg-white px-7 py-3.5 text-center text-sm font-bold text-ink transition hover:border-brand hover:text-brand"
           >
-            Gọi 0901 234 567
+            Gọi {hotline}
           </a>
         </div>
 

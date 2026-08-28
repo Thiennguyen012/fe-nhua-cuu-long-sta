@@ -436,15 +436,15 @@ export function ProductCatalog({
                   >
                     <Link
                       href={getProductHref(product)}
-                      className={`relative block overflow-hidden bg-slate-100 ${
-                        view === "list" ? "aspect-[4/3] sm:h-[190px] sm:aspect-auto" : "aspect-[4/3]"
+                      className={`relative block overflow-hidden bg-white ${
+                        view === "list" ? "aspect-square sm:h-[190px] sm:aspect-auto" : "aspect-square"
                       }`}
                     >
                       {imageUrl ? (
                         <img
                           src={imageUrl}
                           alt={product.product_name}
-                          className="size-full object-cover transition duration-500 group-hover:scale-105"
+                          className="size-full object-contain p-2 transition duration-500 group-hover:scale-[1.02]"
                         />
                       ) : (
                         <ProductBlankImage />

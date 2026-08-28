@@ -38,6 +38,7 @@ export interface ProductVariant {
   price: string;
   stock: number;
   is_active: boolean;
+  is_contact_price: boolean;
   options: ProductOption[];
   option_names: string;
 }
@@ -50,6 +51,7 @@ export interface ProductListItem {
   description: string | null;
   is_active: boolean;
   is_featured: boolean;
+  is_contact_price: boolean;
   categories: Category[];
   category_names: string;
   images: ProductImage[];

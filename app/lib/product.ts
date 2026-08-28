@@ -23,10 +23,14 @@ export function getProductImageUrl(image: ProductImage | null | undefined) {
 }
 
 export function getActiveProductPrices(product: Pick<ProductListItem, "variants">) {
-  return product.variants.filter((variant) => variant.is_active).map((variant) => Number(variant.price)).filter(Number.isFinite);
+  return product.variants
+    .filter((variant) => variant.is_active && !variant.is_contact_price)
+    .map((variant) => Number(variant.price))
+    .filter(Number.isFinite);
 }
 
-export function formatProductPrice(product: Pick<ProductListItem, "variants">) {
+export function formatProductPrice(product: Pick<ProductListItem, "variants" | "is_contact_price">) {
+  if (product.is_contact_price) return "Liên hệ";
   const prices = getActiveProductPrices(product);
   return prices.length ? `Từ ${Math.min(...prices).toLocaleString("vi-VN")}đ` : "Liên hệ";
 }

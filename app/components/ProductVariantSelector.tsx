@@ -6,12 +6,13 @@ import type { ProductVariant, ProductVariantGroup } from "../models/product.mode
 type Props = {
   groups: ProductVariantGroup[];
   variants: ProductVariant[];
+  isContactPrice: boolean;
   onVariantChange?: (variant: ProductVariant | null) => void;
 };
 
 const formatMoney = (value: number) => `${value.toLocaleString("vi-VN")}đ`;
 
-export function ProductVariantSelector({ groups, variants, onVariantChange }: Props) {
+export function ProductVariantSelector({ groups, variants, isContactPrice, onVariantChange }: Props) {
   const activeGroups = useMemo(
     () =>
       groups
@@ -47,10 +48,15 @@ export function ProductVariantSelector({ groups, variants, onVariantChange }: Pr
   }, [selectedVariant, onVariantChange]);
 
   const displayedVariants = matchingVariants.length ? matchingVariants : sellableVariants;
-  const prices = displayedVariants.map((variant) => Number(variant.price)).filter(Number.isFinite);
+  const prices = displayedVariants
+    .filter((variant) => !variant.is_contact_price)
+    .map((variant) => Number(variant.price))
+    .filter(Number.isFinite);
   const minPrice = prices.length ? Math.min(...prices) : null;
   const maxPrice = prices.length ? Math.max(...prices) : null;
-  const priceLabel = selectedVariant
+  const priceLabel = isContactPrice || selectedVariant?.is_contact_price
+    ? "Liên hệ"
+    : selectedVariant
     ? formatMoney(Number(selectedVariant.price))
     : minPrice === null
     ? "Liên hệ"
