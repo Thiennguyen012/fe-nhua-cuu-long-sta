@@ -7,6 +7,7 @@ import { JsonLd } from "@/app/components/JsonLd";
 import { createBreadcrumbJsonLd } from "@/app/lib/seo";
 import { getCategories } from "@/app/services/category.service";
 import { getProducts } from "@/app/services/product.service";
+import { getTagGroups } from "@/app/services/tag.service";
 import type { ProductSort } from "@/app/models/product.model";
 
 export const dynamic = "force-dynamic";
@@ -36,10 +37,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const query = await searchParams;
   const search = typeof query["tim-kiem"] === "string" ? query["tim-kiem"] : typeof query.search === "string" ? query.search : "";
 
-  const categories = await getCategories().catch((error: unknown) => {
-    console.error("Failed to load product categories:", error);
-    return [];
-  });
+  const [categories, tagGroups] = await Promise.all([
+    getCategories().catch((error: unknown) => {
+      console.error("Failed to load product categories:", error);
+      return [];
+    }),
+    getTagGroups().catch((error: unknown) => {
+      console.error("Failed to load product tag groups:", error);
+      return [];
+    }),
+  ]);
 
   let categorySlugs: string[] = [];
   const addSlugs = (val: string | string[] | undefined) => {
@@ -98,7 +105,69 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const parsedPage = Number(typeof query.trang === "string" ? query.trang : typeof query.page === "string" ? query.page : 1);
   const page = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
-  const productResponse = await getProducts({ search, categorySlugs, sort, isFeatured, page, perPage: 12 }).catch(
+  const parsePositiveNumber = (value: string | string[] | undefined) => {
+    const rawValue = Array.isArray(value) ? value[0] : value;
+    if (!rawValue) return undefined;
+    const parsed = Number(rawValue);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
+  };
+  const friendlyPriceValue =
+    typeof query["khoang-gia"] === "string"
+      ? query["khoang-gia"]
+      : typeof query.gia === "string"
+        ? query.gia
+        : "";
+  const friendlyPrice = friendlyPriceValue.match(/^(\d+)-(\d+)$/);
+  const minPrice = friendlyPrice
+    ? parsePositiveNumber(friendlyPrice[1])
+    : parsePositiveNumber(query.min_price ?? query["gia-tu"]);
+  const maxPrice = friendlyPrice
+    ? parsePositiveNumber(friendlyPrice[2])
+    : parsePositiveNumber(query.max_price ?? query["gia-den"]);
+
+  const tagIds: number[] = [];
+  const addTagIds = (value: string | string[] | undefined) => {
+    if (!value) return;
+    (Array.isArray(value) ? value : [value]).forEach((item) => {
+      item.split(",").forEach((part) => {
+        const id = Number(part.trim());
+        if (Number.isInteger(id) && id > 0) tagIds.push(id);
+      });
+    });
+  };
+  addTagIds(query["tag_ids[]"]);
+  addTagIds(query.tag_ids);
+  addTagIds(query.tags);
+
+  const tagSlugs: string[] = [];
+  const addTagSlugs = (value: string | string[] | undefined) => {
+    if (!value) return;
+    (Array.isArray(value) ? value : [value]).forEach((item) => {
+      item.split(",").forEach((part) => {
+        const slug = part.trim();
+        if (slug) tagSlugs.push(slug);
+      });
+    });
+  };
+  addTagSlugs(query["tag_slugs[]"]);
+  addTagSlugs(query.tag_slugs);
+  addTagSlugs(query.tag);
+
+  const allTags = tagGroups.flatMap((group) => group.tags);
+  const tagSlugsFromIds = allTags.filter((tag) => tagIds.includes(tag.id)).map((tag) => tag.slug);
+  const selectedTagSlugs = Array.from(new Set([...tagSlugs, ...tagSlugsFromIds]));
+
+  const productResponse = await getProducts({
+    search,
+    categorySlugs,
+    tagSlugs: selectedTagSlugs,
+    minPrice,
+    maxPrice,
+    sort,
+    isFeatured,
+    page,
+    perPage: 12,
+  }).catch(
     (error: unknown) => {
       console.error("Failed to load products:", error);
       return { status_code: 500, message: "", data: [], meta: { current_page: 1, last_page: 1, per_page: 12, total: 0 } };
@@ -116,12 +185,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <Navbar />
       <BreadcrumbBar items={[{ label: "Trang chủ", href: "/" }, { label: "Sản phẩm" }]} />
       <ProductCatalog
-        key={search + categorySlugs.join(",")}
+        key={[search, categorySlugs.join(","), selectedTagSlugs.join(","), minPrice, maxPrice].join("|")}
         categories={categories}
+        tagGroups={tagGroups}
         products={productResponse.data}
         meta={productResponse.meta}
         search={search}
         selectedCategorySlugs={categorySlugs}
+        selectedTagSlugs={selectedTagSlugs}
+        minPrice={minPrice}
+        maxPrice={maxPrice}
         sort={sort}
         isFeatured={isFeatured}
       />

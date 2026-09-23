@@ -41,6 +41,16 @@ export interface ProductVariant {
   is_contact_price: boolean;
   options: ProductOption[];
   option_names: string;
+  images?: ProductImage[];
+  first_image?: ProductImage | null;
+  image_source?: "variant" | "product" | string;
+  uses_product_images?: boolean;
+}
+
+export interface ProductVariantResponse {
+  status_code: number;
+  message: string;
+  data: ProductVariant;
 }
 
 export interface ProductListItem {
@@ -82,6 +92,10 @@ export interface ProductListParams {
   categorySlugs?: string[];
   categorySlug?: string;
   categoryIds?: number[];
+  tagIds?: number[];
+  tagSlugs?: string[];
+  minPrice?: number;
+  maxPrice?: number;
   sort?: ProductSort;
   isFeatured?: boolean;
   perPage?: number;

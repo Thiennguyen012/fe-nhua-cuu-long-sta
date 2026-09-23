@@ -7,20 +7,32 @@ import { FormEvent, useState, useTransition } from "react";
 import { formatProductPrice, getProductHref, getProductImageUrl } from "../lib/product";
 import type { Category, PaginationMeta } from "../models/category.model";
 import type { ProductListItem, ProductSort } from "../models/product.model";
+import type { ProductTagGroup } from "../models/tag.model";
 import { stripHtml } from "../services/page-content.service";
 import { ProductBlankImage } from "./ProductBlankImage";
 
 type Props = {
   categories: Category[];
+  tagGroups: ProductTagGroup[];
   products: ProductListItem[];
   meta: PaginationMeta;
   search: string;
   selectedCategorySlugs: string[];
+  selectedTagSlugs: string[];
+  minPrice?: number;
+  maxPrice?: number;
   sort: ProductSort;
   isFeatured?: boolean;
 };
 
 type CatalogView = "grid" | "list";
+
+const MIN_PRICE = 0;
+const MAX_PRICE = 2000000;
+const PRICE_STEP = 10000;
+
+const clampPrice = (value: number) => Math.min(MAX_PRICE, Math.max(MIN_PRICE, value));
+const formatFilterPrice = (value: number) => `${new Intl.NumberFormat("vi-VN").format(value)}đ`;
 
 function FilterIcon() {
   return (
@@ -74,10 +86,14 @@ function ResetIcon() {
 
 export function ProductCatalog({
   categories,
+  tagGroups,
   products,
   meta,
   search,
   selectedCategorySlugs,
+  selectedTagSlugs,
+  minPrice,
+  maxPrice,
   sort,
   isFeatured,
 }: Props) {
@@ -86,12 +102,22 @@ export function ProductCatalog({
   const [filterOpen, setFilterOpen] = useState(false);
   const [view, setView] = useState<CatalogView>("grid");
   const [catalogSearch, setCatalogSearch] = useState(search);
+  const [draftMinPrice, setDraftMinPrice] = useState(String(minPrice ?? MIN_PRICE));
+  const [draftMaxPrice, setDraftMaxPrice] = useState(String(maxPrice ?? MAX_PRICE));
+
+  const parsedDraftMin = clampPrice(Number(draftMinPrice) || MIN_PRICE);
+  const parsedDraftMax = clampPrice(Number(draftMaxPrice) || MAX_PRICE);
+  const draftFrom = Math.min(parsedDraftMin, parsedDraftMax);
+  const draftTo = Math.max(parsedDraftMin, parsedDraftMax);
 
   const getCatSlugKey = (cat: Category) => cat.slug || String(cat.id);
 
   const navigate = (values: {
     search?: string;
     categorySlugs?: string[];
+    tagSlugs?: string[];
+    minPrice?: number | null;
+    maxPrice?: number | null;
     sort?: ProductSort;
     isFeatured?: boolean | null;
     page?: number;
@@ -99,12 +125,19 @@ export function ProductCatalog({
     const query = new URLSearchParams();
     const nextSearch = values.search ?? search;
     const nextCategorySlugs = values.categorySlugs ?? selectedCategorySlugs;
+    const nextTagSlugs = values.tagSlugs ?? selectedTagSlugs;
+    const nextMinPrice = values.minPrice === null ? undefined : values.minPrice ?? minPrice;
+    const nextMaxPrice = values.maxPrice === null ? undefined : values.maxPrice ?? maxPrice;
     const nextSort = values.sort ?? sort;
     const nextFeatured = values.isFeatured === null ? undefined : values.isFeatured ?? isFeatured;
 
     if (nextSearch) query.set("tim-kiem", nextSearch);
     if (nextCategorySlugs.length > 0) {
       query.set("danh-muc", nextCategorySlugs.join(","));
+    }
+    if (nextTagSlugs.length > 0) query.set("tag", nextTagSlugs.join(","));
+    if (typeof nextMinPrice === "number" || typeof nextMaxPrice === "number") {
+      query.set("khoang-gia", `${nextMinPrice ?? MIN_PRICE}-${nextMaxPrice ?? MAX_PRICE}`);
     }
     if (nextSort && nextSort !== "latest") query.set("sap-xep", nextSort);
     if (typeof nextFeatured === "boolean") query.set("noi-bat", String(nextFeatured));
@@ -128,15 +161,55 @@ export function ProductCatalog({
       page: 1,
     });
 
-  const clearFilters = () => navigate({ search: "", categorySlugs: [], sort: "latest", isFeatured: null, page: 1 });
+  const toggleTag = (tagSlug: string) =>
+    navigate({
+      tagSlugs: selectedTagSlugs.includes(tagSlug)
+        ? selectedTagSlugs.filter((slug) => slug !== tagSlug)
+        : [...selectedTagSlugs, tagSlug],
+      page: 1,
+    });
+
+  const applyPriceFilter = () => {
+    setDraftMinPrice(String(draftFrom));
+    setDraftMaxPrice(String(draftTo));
+    navigate({
+      minPrice: draftFrom === MIN_PRICE && draftTo === MAX_PRICE ? null : draftFrom,
+      maxPrice: draftFrom === MIN_PRICE && draftTo === MAX_PRICE ? null : draftTo,
+      page: 1,
+    });
+    setFilterOpen(false);
+  };
+
+  const clearFilters = () =>
+    navigate({
+      search: "",
+      categorySlugs: [],
+      tagSlugs: [],
+      minPrice: null,
+      maxPrice: null,
+      sort: "latest",
+      isFeatured: null,
+      page: 1,
+    });
   const resetFilters = () => {
     setCatalogSearch("");
+    setDraftMinPrice(String(MIN_PRICE));
+    setDraftMaxPrice(String(MAX_PRICE));
     clearFilters();
   };
 
   const activeCategories = categories.filter((category) =>
     selectedCategorySlugs.includes(getCatSlugKey(category))
   );
+  const activeTags = tagGroups.flatMap((group) => group.tags).filter((tag) => selectedTagSlugs.includes(tag.slug));
+  const hasPriceFilter = typeof minPrice === "number" || typeof maxPrice === "number";
+  const activePriceLabel = `${formatFilterPrice(minPrice ?? MIN_PRICE)} – ${formatFilterPrice(maxPrice ?? MAX_PRICE)}`;
+  const activeFilterCount =
+    selectedCategorySlugs.length +
+    selectedTagSlugs.length +
+    (hasPriceFilter ? 1 : 0) +
+    (search ? 1 : 0) +
+    (isFeatured ? 1 : 0);
 
   const filterPanel = (
     <div className="space-y-6">
@@ -213,63 +286,117 @@ export function ProductCatalog({
       </div>
 
       <div className="border-t border-slate-100 pt-5">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[13px] font-bold text-ink">Khoảng giá</h3>
-          <span className="rounded-full bg-slate-100 px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-slate-400">
-            Chờ API
-          </span>
-        </div>
-        <div className="mt-3 space-y-2">
-          {["Dưới 100.000đ", "100.000đ – 500.000đ", "Trên 500.000đ"].map((label) => (
-            <label key={label} className="flex cursor-not-allowed items-center gap-3 text-xs text-slate-400">
-              <input disabled type="radio" name="price-range" className="size-3.5" />
-              {label}
+        <h3 className="text-[13px] font-bold text-ink">Khoảng giá</h3>
+        <div className="mt-5">
+          <div className="relative h-5">
+            <div className="absolute inset-x-0 top-2 h-1 rounded-full bg-slate-200" />
+            <div
+              className="absolute top-2 h-1 rounded-full bg-brand"
+              style={{
+                left: `${(draftFrom / MAX_PRICE) * 100}%`,
+                right: `${100 - (draftTo / MAX_PRICE) * 100}%`,
+              }}
+            />
+            <input
+              type="range"
+              min={MIN_PRICE}
+              max={MAX_PRICE}
+              step={PRICE_STEP}
+              value={draftFrom}
+              aria-label="Giá thấp nhất"
+              onChange={(event) =>
+                setDraftMinPrice(String(Math.min(Number(event.target.value), draftTo)))
+              }
+              className="price-range-input absolute inset-x-0 top-0 w-full"
+            />
+            <input
+              type="range"
+              min={MIN_PRICE}
+              max={MAX_PRICE}
+              step={PRICE_STEP}
+              value={draftTo}
+              aria-label="Giá cao nhất"
+              onChange={(event) =>
+                setDraftMaxPrice(String(Math.max(Number(event.target.value), draftFrom)))
+              }
+              className="price-range-input absolute inset-x-0 top-0 w-full"
+            />
+          </div>
+
+          <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+            <label className="min-w-0">
+              <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Từ</span>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={MIN_PRICE}
+                  max={MAX_PRICE}
+                  step={PRICE_STEP}
+                  value={draftMinPrice}
+                  onChange={(event) => setDraftMinPrice(event.target.value)}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 pr-7 text-[11px] text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-sky-100"
+                />
+                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">đ</span>
+              </div>
             </label>
-          ))}
+            <span className="pb-3 text-xs text-slate-300">–</span>
+            <label className="min-w-0">
+              <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-slate-400">Đến</span>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={MIN_PRICE}
+                  max={MAX_PRICE}
+                  step={PRICE_STEP}
+                  value={draftMaxPrice}
+                  onChange={(event) => setDraftMaxPrice(event.target.value)}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 pr-7 text-[11px] text-ink outline-none transition focus:border-brand focus:ring-4 focus:ring-sky-100"
+                />
+                <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">đ</span>
+              </div>
+            </label>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <span className="text-[10px] text-slate-400">
+              {formatFilterPrice(draftFrom)} – {formatFilterPrice(draftTo)}
+            </span>
+            <button
+              type="button"
+              onClick={applyPriceFilter}
+              className="cursor-pointer rounded-full bg-brand px-4 py-2 text-[11px] font-bold text-white transition hover:bg-brand-dark"
+            >
+              Áp dụng
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="border-t border-slate-100 pt-5">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[13px] font-bold text-ink">Tình trạng</h3>
-          <span className="rounded-full bg-slate-100 px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-slate-400">
-            Chờ API
-          </span>
+      {tagGroups.filter((group) => group.tags.length > 0).map((group) => (
+        <div key={group.id} className="border-t border-slate-100 pt-5">
+          <h3 className="text-[13px] font-bold text-ink">{group.name}</h3>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {group.tags.map((tag) => {
+              const isSelected = selectedTagSlugs.includes(tag.slug);
+              return (
+                <button
+                  key={tag.id}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => toggleTag(tag.slug)}
+                  className={`cursor-pointer rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
+                    isSelected
+                      ? "border-brand bg-brand text-white shadow-sm"
+                      : "border-slate-200 text-slate-500 hover:border-sky-300 hover:bg-sky-50 hover:text-brand"
+                  }`}
+                >
+                  {tag.name}
+                </button>
+              );
+            })}
+          </div>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {["Còn hàng", "Hết hàng"].map((label) => (
-            <button
-              disabled
-              key={label}
-              type="button"
-              className="cursor-not-allowed rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-400"
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="border-t border-slate-100 pt-5">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[13px] font-bold text-ink">Chất liệu</h3>
-          <span className="rounded-full bg-slate-100 px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-slate-400">
-            Chờ API
-          </span>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {["HDPE", "PP", "PVC", "PET"].map((label) => (
-            <button
-              disabled
-              key={label}
-              type="button"
-              className="cursor-not-allowed rounded-full border border-slate-200 px-3 py-1.5 text-[11px] text-slate-400"
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      ))}
     </div>
   );
 
@@ -291,9 +418,9 @@ export function ProductCatalog({
                 >
                   <FilterIcon />
                   Bộ lọc
-                  {selectedCategorySlugs.length > 0 && (
+                  {activeFilterCount > 0 && (
                     <span className="grid size-5 place-items-center rounded-full bg-brand text-[10px] text-white">
-                      {selectedCategorySlugs.length}
+                      {activeFilterCount}
                     </span>
                   )}
                 </button>
@@ -381,7 +508,7 @@ export function ProductCatalog({
               </div>
             </div>
 
-            {(search || activeCategories.length > 0 || isFeatured === true) && (
+            {(search || activeCategories.length > 0 || activeTags.length > 0 || hasPriceFilter || isFeatured === true) && (
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="text-xs font-semibold text-slate-400">Đang lọc:</span>
                 {search && (
@@ -404,6 +531,31 @@ export function ProductCatalog({
                     className="group inline-flex items-center gap-2 rounded-full border border-sky-200/80 bg-sky-50 px-3.5 py-1.5 text-xs font-semibold text-brand shadow-sm transition duration-200 hover:border-sky-300 hover:bg-sky-100 hover:shadow"
                   >
                     <span>{stripHtml(category.category_name)}</span>
+                    <span className="grid size-4 place-items-center rounded-full bg-sky-200/70 text-[10px] font-bold text-brand transition duration-200 group-hover:bg-brand group-hover:text-white">
+                      ✕
+                    </span>
+                  </button>
+                ))}
+                {hasPriceFilter && (
+                  <button
+                    type="button"
+                    onClick={() => navigate({ minPrice: null, maxPrice: null, page: 1 })}
+                    className="group inline-flex items-center gap-2 rounded-full border border-sky-200/80 bg-sky-50 px-3.5 py-1.5 text-xs font-semibold text-brand shadow-sm transition duration-200 hover:border-sky-300 hover:bg-sky-100 hover:shadow"
+                  >
+                    <span>{activePriceLabel}</span>
+                    <span className="grid size-4 place-items-center rounded-full bg-sky-200/70 text-[10px] font-bold text-brand transition duration-200 group-hover:bg-brand group-hover:text-white">
+                      ✕
+                    </span>
+                  </button>
+                )}
+                {activeTags.map((tag) => (
+                  <button
+                    type="button"
+                    key={tag.id}
+                    onClick={() => toggleTag(tag.slug)}
+                    className="group inline-flex items-center gap-2 rounded-full border border-sky-200/80 bg-sky-50 px-3.5 py-1.5 text-xs font-semibold text-brand shadow-sm transition duration-200 hover:border-sky-300 hover:bg-sky-100 hover:shadow"
+                  >
+                    <span>{tag.name}</span>
                     <span className="grid size-4 place-items-center rounded-full bg-sky-200/70 text-[10px] font-bold text-brand transition duration-200 group-hover:bg-brand group-hover:text-white">
                       ✕
                     </span>

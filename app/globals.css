@@ -10,3 +10,37 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hero-content { animation: hero-in .55s ease-out; }
 @keyframes search-dropdown-in { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: translateY(0); } }
 .search-dropdown { animation: search-dropdown-in .28s cubic-bezier(.22, 1, .36, 1); }
+
+.price-range-input {
+  height: 20px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+.price-range-input::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+.price-range-input::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  appearance: none;
+  border: 3px solid #fff;
+  border-radius: 999px;
+  background: var(--brand);
+  box-shadow: 0 1px 5px rgba(8, 117, 189, .35);
+  cursor: grab;
+  pointer-events: auto;
+}
+.price-range-input::-webkit-slider-thumb:active { cursor: grabbing; }
+.price-range-input::-moz-range-track { height: 4px; background: transparent; }
+.price-range-input::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 3px solid #fff;
+  border-radius: 999px;
+  background: var(--brand);
+  box-shadow: 0 1px 5px rgba(8, 117, 189, .35);
+  cursor: grab;
+  pointer-events: auto;
+}
+.price-range-input::-moz-range-thumb:active { cursor: grabbing; }

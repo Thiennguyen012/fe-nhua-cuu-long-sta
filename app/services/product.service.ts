@@ -22,6 +22,15 @@ export async function getProducts(params: ProductListParams = {}): Promise<Produ
     params.categoryIds.forEach((id) => query.append("category_ids[]", String(id)));
   }
 
+  if (params.tagIds?.length) {
+    params.tagIds.forEach((id) => query.append("tag_ids[]", String(id)));
+  }
+  if (params.tagSlugs?.length) {
+    params.tagSlugs.forEach((slug) => query.append("tag_slugs[]", slug));
+  }
+  if (typeof params.minPrice === "number") query.set("min_price", String(params.minPrice));
+  if (typeof params.maxPrice === "number") query.set("max_price", String(params.maxPrice));
+
   if (params.sort) query.set("sort", params.sort);
   if (typeof params.isFeatured === "boolean") query.set("is_featured", String(params.isFeatured));
   query.set("per_page", String(params.perPage ?? 12));
